@@ -38,6 +38,8 @@ parser.add_argument('--balancing', type=str, default="", help='Data balancing: "
 parser.add_argument('--use_cv', type=str, default="False", help='Use cross-validation: "True" or "False"')
 parser.add_argument('--n_folds', type=int, default=10, help='Number of CV folds (-1 for jackknife)')
 parser.add_argument('--regression', type=str, default="False", help='Use regression mode: "True" or "False"')
+parser.add_argument('--feature_count', type=int, default=None, help='Fixed feature count (overrides search)')
+parser.add_argument('--svm_cost', type=float, default=None, help='Fixed SVM cost C (overrides search)')
 args, unknown = parser.parse_known_args()
 
 BALANCING = args.balancing if args.balancing else ""  # BASELINE: Typically no SMOTE
@@ -52,14 +54,18 @@ DO_REGRESSION = args.regression.lower() == "true" if hasattr(args, 'regression')
 # For regression with SMOTE, search for optimal C value
 # Reduced search: [1, 10, 30, 100] for faster execution
 # Full search: [0.3, 1, 3, 10, 30, 100] for complete search
-REDUCED_SEARCH = True  # Set to False for full parameter search
-if DO_REGRESSION and BALANCING == "_SMOTED":
-    if REDUCED_SEARCH:
-        SVM_COST_LIST = [1, 10, 30, 100]  # 4 values - faster
-    else:
-        SVM_COST_LIST = [0.3, 1, 3, 10, 30, 100]  # 6 values - complete
+# If fixed C is provided via command line, use that
+if args.svm_cost is not None:
+    SVM_COST_LIST = [args.svm_cost]
 else:
-    SVM_COST_LIST = [1.0]  # BASELINE: Check paper for exact C value
+    REDUCED_SEARCH = True  # Set to False for full parameter search
+    if DO_REGRESSION and BALANCING == "_SMOTED":
+        if REDUCED_SEARCH:
+            SVM_COST_LIST = [1, 10, 30, 100]  # 4 values - faster
+        else:
+            SVM_COST_LIST = [0.3, 1, 3, 10, 30, 100]  # 6 values - complete
+    else:
+        SVM_COST_LIST = [1.0]  # BASELINE: Check paper for exact C value
 SVM_KERNEL = "linear"  # BASELINE: Typically linear kernel
 
 # Feature selection
@@ -67,14 +73,18 @@ SVM_KERNEL = "linear"  # BASELINE: Typically linear kernel
 # Paper uses "selected features" - we'll search from 2800 down to find best
 # Reduced search space: [2800, 2500, 2250, 2000, 1750, 1500] for faster execution
 # Full search: list(range(2800, 1499, -50)) for complete search (slower)
-REDUCED_SEARCH = True  # Set to False for full parameter search
-if DO_REGRESSION and BALANCING == "_SMOTED":
-    if REDUCED_SEARCH:
-        FEATURE_COUNT_LIST = [2800, 2500, 2250, 2000, 1750, 1500]  # 6 values - faster
-    else:
-        FEATURE_COUNT_LIST = list(range(2800, 1499, -50))  # 27 values - complete
+# If fixed feature count is provided via command line, use that
+if args.feature_count is not None:
+    FEATURE_COUNT_LIST = [args.feature_count]
 else:
-    FEATURE_COUNT_LIST = [2800]  # BASELINE: Check paper for exact feature count
+    REDUCED_SEARCH = True  # Set to False for full parameter search
+    if DO_REGRESSION and BALANCING == "_SMOTED":
+        if REDUCED_SEARCH:
+            FEATURE_COUNT_LIST = [2800, 2500, 2250, 2000, 1750, 1500]  # 6 values - faster
+        else:
+            FEATURE_COUNT_LIST = list(range(2800, 1499, -50))  # 27 values - complete
+    else:
+        FEATURE_COUNT_LIST = [2800]  # BASELINE: Check paper for exact feature count
 # Use np.inf for all features (no feature selection)
 # FEATURE_COUNT_LIST = [np.inf]  # Uncomment if baseline uses all features
 

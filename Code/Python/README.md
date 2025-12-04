@@ -2,6 +2,15 @@
 
 This directory contains Python implementations of the baseline reproduction scripts.
 
+## 📚 **New to This Project?**
+
+**👉 Start here: [`PROJECT_GUIDE.md`](PROJECT_GUIDE.md)** - Complete guide for understanding the Python implementation, including:
+- What files to read and in what order
+- How the code works
+- Key concepts and workflow
+- Quick start examples
+- Common questions
+
 ## Installation
 
 1. Install required packages:

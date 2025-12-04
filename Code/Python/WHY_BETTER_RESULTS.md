@@ -68,3 +68,4 @@ Would you like me to:
 2. Add data shuffling to match R's behavior?
 3. Verify we're using the same parameters the paper used?
 
+
